@@ -12,11 +12,8 @@
 
 ![License](https://img.shields.io/static/v1?label=License&message=CC-BY-NC-ND-4.0&color=green)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md)
-[![Automatic Dependency Submission](https://github.com/lyes-sefiane/microservices-monitoring-and-observability/actions/workflows/dependency-graph/auto-submission/badge.svg)](https://github.com/lyes-sefiane/microservices-monitoring-and-observability/actions/workflows/dependency-graph/auto-submission)
-[![CodeQL](https://github.com/lyes-sefiane/microservices-monitoring-and-observability/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/lyes-sefiane/microservices-monitoring-and-observability/actions/workflows/github-code-scanning/codeql)
-[![Dependabot Updates](https://github.com/lyes-sefiane/microservices-monitoring-and-observability/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/lyes-sefiane/microservices-monitoring-and-observability/actions/workflows/dependabot/dependabot-updates)
-![GitHub Repo stars](https://img.shields.io/github/stars/lyes-sefiane/network-device-inventory?style=social)
-![GitHub top language](https://img.shields.io/github/languages/top/lyes-sefiane/network-device-inventory)
+![GitHub Repo stars](https://img.shields.io/github/stars/lyes-sefiane/api-gateway?style=social)
+![GitHub top language](https://img.shields.io/github/languages/top/lyes-sefiane/api-gateway)
 
 # Documentation
 
