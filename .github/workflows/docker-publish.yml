@@ -36,7 +36,10 @@ jobs:
         cache: maven    
         
     - name: Build with Maven
-      run: mvn clean install -DskipTests   
+      run: mvn clean install -DskipTests 
+      
+    - name: Rename Artifact
+      run: mv target/api-gateway-0.0.1-SNAPSHOT.jar target/api-gateway.jar
       
   docker-build-publish:
     runs-on: ubuntu-latest
