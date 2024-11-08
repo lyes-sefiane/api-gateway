@@ -6,12 +6,6 @@ name: Docker Publish
 # documentation.
 
 on:
-  push:
-    branches: [ "main" , "develop" ]
-    # Publish semver tags as releases.
-    tags: [ 'v*.*.*' ]
-  pull_request:
-    branches: [ "main" , "develop" ]
   release:
     types:
       - published
@@ -24,7 +18,7 @@ env:
 
 
 jobs:
-  build:
+  docker-build-publish:
 
     runs-on: ubuntu-latest
     permissions:
