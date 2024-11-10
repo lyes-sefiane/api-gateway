@@ -7,7 +7,7 @@ name: Docker Publish
 
 on:
   push:
-    branches: [ "main" , "develop" ]
+    branches: [ "main" , "develop", "ci-cd-update" ]
   release:
     types:
       - published
