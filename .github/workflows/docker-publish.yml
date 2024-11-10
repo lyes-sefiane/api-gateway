@@ -7,7 +7,7 @@ name: Docker Publish
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" , "develop" ]
   release:
     types:
       - published
@@ -20,9 +20,33 @@ env:
 
 
 jobs:
-  docker-build-publish:
-
+  maven-build:
     runs-on: ubuntu-latest
+    steps:     
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven      
+          
+      - name: Build with Maven
+        run: mvn clean install -DskipTests
+        
+      - name: Upload Artifact 
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-gateway
+          path: target/api-gateway.jar
+          compression-level: 0
+          overwrite: true
+          
+  docker-build-publish:
+    runs-on: ubuntu-latest
+    needs: [maven-build]
+    if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
       packages: write
@@ -34,15 +58,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      - name: Create Target Folder
+        run: mkdir target
+        
+      - name: Download Artefact
+        uses: actions/download-artifact@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
+          name: api-gateway
+          path: target
           
-      - name: Build with Maven
-        run: mvn clean install -DskipTests
+      - name: Display structure of downloaded files
+        run: ls -R target
        
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
