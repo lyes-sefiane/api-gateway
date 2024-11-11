@@ -25,7 +25,7 @@
 
 # Properties
 
-## Redis
+### Redis
 
 | Property                               | Value             |
 |----------------------------------------|-------------------|
@@ -40,7 +40,7 @@
 | spring.data.redis.timeout              | 60000             |
 
 
-## Routes
+### Routes
 
 | Property                                                                           | Value                       |
 |------------------------------------------------------------------------------------|-----------------------------|
@@ -50,7 +50,7 @@
 | spring.cloud.gateway.routes[0].predicates[1]                                       | Method=GET,POST,PUT,DELETE  |
 
 
-## Rate Limiting
+### Rate Limiting
 
 | Property                                                                           | Value                  |
 |------------------------------------------------------------------------------------|------------------------|
@@ -62,7 +62,7 @@
 
 
 
-## Retry
+### Retry
 
 | Property                                                                     | Value               |
 |------------------------------------------------------------------------------|---------------------|
@@ -76,7 +76,7 @@
 | spring.cloud.gateway.routes[0].filters[1].args[backoff.basedOnPreviousValue] | false               |
 
 
-## Circuit Breaker
+### Circuit Breaker
 
 | Property                                                     | Value                         |
 |--------------------------------------------------------------|-------------------------------|
@@ -85,7 +85,7 @@
 | spring.cloud.gateway.routes[0].filters[2].args[fallbackUri]  | forward:/service-unavailable  |
 
 
-## HashiCorp Consul
+### HashiCorp Consul
 
 | Property                                        | Value                       |
 |-------------------------------------------------|-----------------------------|
@@ -96,7 +96,7 @@
 | spring.cloud.gateway.discovery.locator.enabled  | ture/false                  | 
 
 
-## Zipkin
+### Zipkin
 
 | Property                                 | Value                                 |
 |------------------------------------------|---------------------------------------|
