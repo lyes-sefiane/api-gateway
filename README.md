@@ -23,9 +23,86 @@
 ![GitHub contributors](https://img.shields.io/github/contributors/lyes-sefiane/api-gateway)
 ![GitHub Repo stars](https://img.shields.io/github/stars/lyes-sefiane/api-gateway?style=social)
 
-# Documentation
+# Properties
 
-* TODO
+## Redis
+
+| Property                               | Value             |
+|----------------------------------------|-------------------|
+| spring.profiles.active                 | prod, test        |
+| spring.application.name                | api-gateway       |
+| spring.data.redis.repositories.enabled | false             |
+| spring.cache.type                      | redis             |
+| spring.data.redis.database             | ${REDIS_DATABASE} |
+| spring.data.redis.host                 | ${REDIS_HOST}     |
+| spring.data.redis.port                 | ${REDIS_PORT}     |
+| spring.data.redis.password             | ${REDIS_PASSWORD} |
+| spring.data.redis.timeout              | 60000             |
+
+
+## Routes
+
+| Property                                                                           | Value                       |
+|------------------------------------------------------------------------------------|-----------------------------|
+| spring.cloud.gateway.routes[0].id                                                  | ${ROUTE_0_ID}               |
+| spring.cloud.gateway.routes[0].uri                                                 | ${ROUTE_0_URI}              |
+| spring.cloud.gateway.routes[0].predicates[0]                                       | Path=${PATH}                |
+| spring.cloud.gateway.routes[0].predicates[1]                                       | Method=GET,POST,PUT,DELETE  |
+
+
+## Rate Limiting
+
+| Property                                                                           | Value                  |
+|------------------------------------------------------------------------------------|------------------------|
+| spring.cloud.gateway.routes[0].filters[0].name                                     | RequestRateLimiter     |
+| spring.cloud.gateway.routes[0].filters[0].args[redis-rate-limiter.replenishRate]   | 10                     |
+| spring.cloud.gateway.routes[0].filters[0].args[redis-rate-limiter.burstCapacity]   | 20                     |
+| spring.cloud.gateway.routes[0].filters[0].args[redis-rate-limiter.requestedTokens] | 1                      |
+| spring.cloud.gateway.routes[0].filters[0].args[key-resolver]                       | #{@customKeyResolver}  |
+
+
+
+## Retry
+
+| Property                                                                     | Value               |
+|------------------------------------------------------------------------------|---------------------|
+| spring.cloud.gateway.routes[0].filters[1].name                               | Retry               |
+| spring.cloud.gateway.routes[0].filters[1].args[retries]                      | 2                   |
+| spring.cloud.gateway.routes[0].filters[1].args[statuses]                     | SERVICE_UNAVAILABLE |
+| spring.cloud.gateway.routes[0].filters[1].args[methods]                      | GET,POST,PUT,DELETE |
+| spring.cloud.gateway.routes[0].filters[1].args[backoff.firstBackoff]         | 10ms                |
+| spring.cloud.gateway.routes[0].filters[1].args[backoff.maxBackoff]           | 50ms                |
+| spring.cloud.gateway.routes[0].filters[1].args[backoff.factor]               | 3                   |
+| spring.cloud.gateway.routes[0].filters[1].args[backoff.basedOnPreviousValue] | false               |
+
+
+## Circuit Breaker
+
+| Property                                                     | Value                         |
+|--------------------------------------------------------------|-------------------------------|
+| spring.cloud.gateway.routes[0].filters[2].name               | CircuitBreaker                |  
+| spring.cloud.gateway.routes[0].filters[2].args[name]         | myCircuitBreaker              |
+| spring.cloud.gateway.routes[0].filters[2].args[fallbackUri]  | forward:/service-unavailable  |
+
+
+## HashiCorp Consul
+
+| Property                                        | Value                       |
+|-------------------------------------------------|-----------------------------|
+| spring.cloud.consul.enabled                     | true/false                  | 
+| spring.cloud.consul.host                        | ${SPRING_CLOUD_CONSUL_HOST} | 
+| spring.cloud.consul.port                        | ${SPRING_CLOUD_CONSUL_PORT} | 
+| spring.cloud.consul.discovery_register          | true/false                  | 
+| spring.cloud.gateway.discovery.locator.enabled  | ture/false                  | 
+
+
+## Zipkin
+
+| Property                                 | Value                                 |
+|------------------------------------------|---------------------------------------|
+| management.tracing.enabled               | true/false                            | 
+| management.zipkin.tracing.endpoint       | ${MANAGEMENT_ZIPKIN_TRACING_ENDPOINT} | 
+| management.tracing.sampling.probability  | 1.0                                   | 
 
 
 # Contributing
