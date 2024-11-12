@@ -29,7 +29,7 @@ env:
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
   IMAGE_TAG: tmp
-  IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${env.IMAGE_TAG}
+  IMAGE: ${{ REGISTRY }}/${{ IMAGE_NAME }}:${{ IMAGE_TAG }}
 
 jobs:
   maven-build:
