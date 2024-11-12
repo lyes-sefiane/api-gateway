@@ -59,6 +59,8 @@ jobs:
       with:
         image: lsefiane/api-gateway:latest
         args: --file=Dockerfile --severity-threshold=high
+    - name: Docker Images List
+      run: docker container ls -a
     - name: Upload result to GitHub Code Scanning
       uses: github/codeql-action/upload-sarif@v3
       with:
