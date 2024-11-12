@@ -22,7 +22,7 @@ on:
   push:
     branches: ["main", "develop"]
   pull_request:
-    branches: ["main"]
+    branches: ["main", "develop"]
 
 permissions:
   contents: read
@@ -36,6 +36,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven    
+        
+      - name: Build with Maven
+        run: mvn clean install -DskipTests
+      
       - name: Set up Snyk CLI to check for security issues
         # Snyk can be used to break the build when it detects security issues.
         # In this case we want to upload the SAST issues to GitHub Code Scanning
@@ -54,7 +64,7 @@ jobs:
         # Runs Snyk Code (SAST) analysis and uploads result into GitHub.
         # Use || true to not fail the pipeline
       - name: Snyk Code test
-        run: snyk code test --sarif > snyk-code.sarif # || true
+        run: snyk code test --sarif > snyk-code.sarif || true
 
         # Runs Snyk Open Source (SCA) analysis and uploads result to Snyk.
       - name: Snyk Open Source monitor
@@ -63,11 +73,12 @@ jobs:
         # Runs Snyk Infrastructure as Code (IaC) analysis and uploads result to Snyk.
         # Use || true to not fail the pipeline.
       - name: Snyk IaC test and report
-        run: snyk iac test --report # || true
+        run: snyk iac test --report || true
 
         # Build the docker image for testing
       - name: Build a Docker image
         run: docker build . -t lsefiane/api-gateway:latest
+        
         # Runs Snyk Container (Container and SCA) analysis and uploads result to Snyk.
       - name: Snyk Container monitor
         run: snyk container monitor lsefiane/api-gateway:latest --file=Dockerfile
