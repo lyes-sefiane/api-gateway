@@ -20,9 +20,6 @@ on:
     # The branches below must be a subset of the branches above
     branches: [ "main", "develop" ]
 
-permissions:
-  contents: read
-
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: docker.io
@@ -53,11 +50,7 @@ jobs:
           name: api-gateway
           path: target/api-gateway.jar
           compression-level: 0
-          overwrite: true        
-
-      # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
-      - name: Update dependency graph
-        uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
+          overwrite: true
         
   docker-build:
     runs-on: ubuntu-latest
