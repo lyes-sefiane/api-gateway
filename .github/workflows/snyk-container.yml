@@ -129,13 +129,20 @@ jobs:
         args: --severity-threshold=high
   
   docker-publish:
-    name: Docker push
     runs-on: ubuntu-latest
     # Build needs to finish first
     needs: [snyk-analysis]
     # Only push images from the main branch
     #if: github.ref == 'refs/heads/main'
     steps:      
+      - name: Download Docker image
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          
+      - name: Load Docker image
+        run: docker load --input image.tar 
+        
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
       - name: Log Into DockerHub registry
