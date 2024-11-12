@@ -77,14 +77,6 @@ jobs:
           
       - name: Display Structure Of Downloaded Files
         run: ls -R target
-       
-      # Install the cosign tool except on PR
-      # https://github.com/sigstore/cosign-installer
-      - name: Install Cosign
-        if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 #v3.5.0
-        with:
-          cosign-release: 'v2.2.4'
 
       # Set up BuildKit Docker container builder to be able to build
       # multi-platform images and export cache
@@ -125,7 +117,7 @@ jobs:
     - name: Run Snyk to check Docker image for vulnerabilities
       # Snyk can be used to break the build when it detects vulnerabilities.
       # In this case we want to upload the issues to GitHub Code Scanning
-      continue-on-error: true
+      continue-on-error: false
       uses: snyk/actions/docker@14818c4695ecc4045f33c9cee9e795a788711ca4
       env:
         # In order to use the Snyk Action you will need to have a Snyk API token.
@@ -135,8 +127,39 @@ jobs:
       with:
         image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
         args: --severity-threshold=high
+  
+  docker-publish:
+    name: Docker push
+    runs-on: ubuntu-latest
+    # Build needs to finish first
+    needs: [snyk-analysis]
+    # Only push images from the main branch
+    #if: github.ref == 'refs/heads/main'
+    steps:      
+      # Login against a Docker registry except on PR
+      # https://github.com/docker/login-action
+      - name: Log Into DockerHub registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Upload result to GitHub Code Scanning
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: snyk.sarif      
+      - name: Set Tags
+        run: | 
+            echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+            echo "BRANCH=${GITHUB_REF##*/}" >> $GITHUB_ENV
+      
+      - name: Tag Images
+        run: 	|
+          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.RELEASE_VERSION }}
+          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH }}
+          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Remove the Docker image with tmp tag
+        run: docker rmi ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:tmp  
+        
+      - name: Push the latest tag
+        run: docker push -a ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+    
