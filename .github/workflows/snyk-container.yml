@@ -62,17 +62,17 @@ jobs:
       id-token: write
 
     steps:
-      #- name: Checkout on API-Gateway Repository
-        #uses: actions/checkout@v4
+      - name: Checkout on API-Gateway Repository
+        uses: actions/checkout@v4
         
-      #- name: Create 'target' Folder
-        #run: mkdir target
+      - name: Create 'target' Folder
+        run: mkdir target
         
-      #- name: Download 'api-gateway.jar' Artefact
-       # uses: actions/download-artifact@v4
-        #with:
-         # name: api-gateway
-          #path: target
+      - name: Download 'api-gateway.jar' Artefact
+        uses: actions/download-artifact@v4
+        with:
+          name: api-gateway
+          path: target
           
       - name: Display Structure Of Downloaded Files
         run: ls -R target
@@ -83,8 +83,16 @@ jobs:
       - name: Set Up Docker Buildx
         uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
         
-      - name: Build Docker image
-        run: docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} .
+      #- name: Build Docker image
+        #run: docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} .
+        # Build and push Docker image with Buildx (don't push on PR)
+      # https://github.com/docker/build-push-action
+      - name: Build & Push Docker Image(s)
+        id: build-and-push
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
+        with:
+          context: .
+          push: false     
 
       - name: Save Docker image
         run: docker save --output image.tar ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
