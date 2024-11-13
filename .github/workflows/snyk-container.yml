@@ -25,6 +25,7 @@ env:
   REGISTRY: docker.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+  BRANCH_TAG: ${GITHUB_REF##*/}
 
 jobs:
   maven-build:
@@ -92,10 +93,11 @@ jobs:
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
           context: .
-          push: false     
+          push: false   
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}
 
       - name: Save Docker image
-        run: docker save --output image.tar ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        run: docker save --output image.tar ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}
         
       - name: Upload Docker image
         uses: actions/upload-artifact@v4
@@ -132,8 +134,8 @@ jobs:
         # or you can signup for free at https://snyk.io/login
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-        args: --severity-threshold=high
+        image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}
+        args: --severity-threshold=low|medium|high|critical
   
   docker-publish:
     runs-on: ubuntu-latest
@@ -163,14 +165,15 @@ jobs:
       - name: Set Tags
         run: | 
             echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-            echo "BRANCH=${GITHUB_REF##*/}" >> $GITHUB_ENV
+#echo "BRANCH=${GITHUB_REF##*/}" >> $GITHUB_ENV
       
       - name: Tag Images
         run: 	|
           docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.RELEASE_VERSION }}
-          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH }}
           docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-
+ 
+#docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH }}
+          
       #- name: Remove the Docker image with tmp tag
         #run: docker rmi ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:tmp  
         
