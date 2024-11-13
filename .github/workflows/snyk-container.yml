@@ -134,6 +134,12 @@ jobs:
     needs: [snyk-analysis]
     # Only push images from the main branch
     #if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
     steps:   
     
       # Install the cosign tool except on PR
