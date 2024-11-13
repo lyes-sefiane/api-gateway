@@ -82,28 +82,20 @@ jobs:
       # https://github.com/docker/setup-buildx-action
       - name: Set Up Docker Buildx
         uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
-        
-      #- name: Build Docker image
-        #run: docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} .
-        # Build and push Docker image with Buildx (don't push on PR)
-      # https://github.com/docker/build-push-action
-      - name: Build & Push Docker Image(s)
-        id: build-and-push
-        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
-        with:
-          context: .
-          push: false   
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}
 
-      - name: Save Docker image
+      - name: Build Docker Image
+        run: docker build . -t  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}
+
+      - name: Save Docker Image
         run: docker save --output image.tar ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}
         
-      - name: Upload Docker image
+      - name: Upload Docker Image
         uses: actions/upload-artifact@v4
         with:
           name: docker-image
           path: image.tar
-          retention-days: 1
+          retention-days: 0
+          overwrite: true
 
   snyk-analysis:
     permissions:
@@ -114,15 +106,15 @@ jobs:
     needs: [docker-build]
     steps: 
 
-    - name: Download Docker image
+    - name: Download Docker Image
       uses: actions/download-artifact@v4
       with:
           name: docker-image
           
-    - name: Load Docker image
+    - name: Load Docker Image
       run: docker load --input image.tar    
     
-    - name: Run Snyk to check Docker image for vulnerabilities
+    - name: Run Snyk to Check Docker Image For Vulnerabilities
       # Snyk can be used to break the build when it detects vulnerabilities.
       # In this case we want to upload the issues to GitHub Code Scanning
       continue-on-error: false
@@ -143,17 +135,17 @@ jobs:
     # Only push images from the main branch
     #if: github.ref == 'refs/heads/main'
     steps:      
-      - name: Download Docker image
+      - name: Download Docker Image
         uses: actions/download-artifact@v4
         with:
           name: docker-image
           
-      - name: Load Docker image
+      - name: Load Docker Image
         run: docker load --input image.tar 
         
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
-      - name: Log Into DockerHub registry
+      - name: Log Into DockerHub Registry
         if: github.event_name != 'pull_request'
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
         with:
