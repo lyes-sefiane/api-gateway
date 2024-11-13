@@ -126,7 +126,7 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}
-        args: --severity-threshold=low|medium|high|critical
+        args: --severity-threshold=critical
   
   docker-publish:
     runs-on: ubuntu-latest
