@@ -25,7 +25,6 @@ env:
   REGISTRY: docker.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
-  IMAGE_TAG: tmp
 
 jobs:
   maven-build:
@@ -63,17 +62,17 @@ jobs:
       id-token: write
 
     steps:
-      - name: Checkout on API-Gateway Repository
-        uses: actions/checkout@v4
+      #- name: Checkout on API-Gateway Repository
+        #uses: actions/checkout@v4
         
-      - name: Create 'target' Folder
-        run: mkdir target
+      #- name: Create 'target' Folder
+        #run: mkdir target
         
-      - name: Download 'api-gateway.jar' Artefact
-        uses: actions/download-artifact@v4
-        with:
-          name: api-gateway
-          path: target
+      #- name: Download 'api-gateway.jar' Artefact
+       # uses: actions/download-artifact@v4
+        #with:
+         # name: api-gateway
+          #path: target
           
       - name: Display Structure Of Downloaded Files
         run: ls -R target
