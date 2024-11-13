@@ -26,7 +26,7 @@ env:
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
   BRANCH_TAG: ${{ github.head_ref || github.ref_name }} 
-  SHA_TAG: SHA=${{ github.event.pull_request.head.sha }}
+
 jobs:
   maven-build:
     runs-on: ubuntu-latest
@@ -142,8 +142,7 @@ jobs:
       # with sigstore/fulcio when running outside of PRs.
       id-token: write
     steps:   
-                 
-          
+                         
       - name: Download Docker Image
         uses: actions/download-artifact@v4
         with:
@@ -161,7 +160,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       
       - name: Tag Image
         run: |
@@ -169,10 +167,10 @@ jobs:
       
       - name: Push Images
         run: docker push -a ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Docker System Prune
+        run: docker system prune --force
         
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v1
-        with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
+      - name: Logout From DockerHub Registry  
+        run: docker logout
+
