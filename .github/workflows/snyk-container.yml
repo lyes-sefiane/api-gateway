@@ -173,7 +173,7 @@ jobs:
       - name: Get latest tag pushed
         #if: github.event.action == 'published'
         id: tag
-        uses: 32teeth/action-github-tag@v1
+        uses: 32teeth/action-github-tag@master
         with:
         # Return only the tag number (e.g., v1.0.0 -> 1.0.0)
           numbers_only: true
