@@ -26,7 +26,7 @@ env:
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
   BRANCH_TAG: ${{ github.head_ref || github.ref_name }} 
-  RELEASE_TAG: ${{ steps.tag.outputs.tag }}
+  #RELEASE_TAG: ${{ steps.tag.outputs.tag }}
   SHA_TAG: ${{ github.sha }}
 
 jobs:
@@ -167,7 +167,6 @@ jobs:
         #if: github.event.action == 'published'
         run: |
           docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.RELEASE_TAG }}
           docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.SHA_TAG }}
           
       - name: Push Images
