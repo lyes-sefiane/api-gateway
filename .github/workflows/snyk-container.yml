@@ -26,9 +26,9 @@ env:
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
   BRANCH_TAG: ${{ github.head_ref || github.ref_name }} 
-  #RELEASE_TAG: ${{ steps.tag.outputs.tag }}
   SHA_TAG: sha-${{ github.sha }}
   LATEST_TAG: latest
+  DATE_NOW: $(date +'@_%Y-%m-%d_%H-%M-%S')
 
 jobs:
   maven-build:
@@ -88,10 +88,10 @@ jobs:
         uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
 
       - name: Build Docker Image
-        run: docker build . -t  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}
+        run: docker build . -t  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}${{env.DATE_NOW}}
 
       - name: Save Docker Image
-        run: docker save --output image.tar ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}
+        run: docker save --output image.tar ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}${{env.DATE_NOW}}
         
       - name: Upload Docker Image
         uses: actions/upload-artifact@v4
@@ -129,7 +129,7 @@ jobs:
         # or you can signup for free at https://snyk.io/login
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}
+        image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}${{env.DATE_NOW}}
         args: --severity-threshold=critical
   
   docker-publish:
@@ -137,7 +137,7 @@ jobs:
     # Build needs to finish first
     needs: [snyk-analysis]
     # Only push images from the main branch
-    #if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
       packages: write
@@ -165,23 +165,14 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       
       - name: Release Tags
-        #if: github.event.action == 'published'
+        if: github.event.action == 'published'
         run: |
-          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}
-          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.SHA_TAG }}
-     
-      - name: Get latest tag pushed
-        #if: github.event.action == 'published'
-        id: tag
-        uses: 32teeth/action-github-tag@master
-        with:
-        # Return only the tag number (e.g., v1.0.0 -> 1.0.0)
-          numbers_only: true
+          echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}${{env.DATE_NOW}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}
+          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}${{env.DATE_NOW}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.SHA_TAG }}
+          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}${{env.DATE_NOW}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.RELEASE_VERSION }}
           
-      - name: Use the latest tag pushed
-        #if: github.event.action == 'published'
-        run: docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{steps.tag.outputs.tag}}
-          
+
       - name: Push Images
         run: docker push -a ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
