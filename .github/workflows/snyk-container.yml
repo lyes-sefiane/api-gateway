@@ -1,0 +1,183 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# A sample workflow which checks out the code, builds a container
+# image using Docker and scans that image for vulnerabilities using
+# Snyk. The results are then uploaded to GitHub Security Code Scanning
+#
+# For more examples, including how to limit scans to only high-severity
+# issues, monitor images for newly disclosed vulnerabilities in Snyk and
+# fail PR checks for new vulnerabilities, see https://github.com/snyk/actions/
+
+name: Snyk Container
+
+on:
+  push:
+    branches: [ "main" ]
+  release:
+    types:
+      - published
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: docker.io
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+  BRANCH_TAG: ${{ github.head_ref || github.ref_name }} 
+  SHA_TAG: sha-${{ github.sha }}
+  LATEST_TAG: latest
+
+jobs:
+  maven-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout on API-Gateway Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build With Maven
+        run: mvn clean install -DskipTests
+        
+      - name: Upload 'api-gateway.jar' Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-gateway
+          path: target/api-gateway.jar
+          compression-level: 0
+          overwrite: true
+        
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [maven-build]
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+
+    steps:
+      - name: Checkout on API-Gateway Repository
+        uses: actions/checkout@v4
+        
+      - name: Create 'target' Folder
+        run: mkdir target
+        
+      - name: Download 'api-gateway.jar' Artefact
+        uses: actions/download-artifact@v4
+        with:
+          name: api-gateway
+          path: target
+          
+      - name: Display Structure Of Downloaded Files
+        run: ls -R target
+
+      # Set up BuildKit Docker container builder to be able to build
+      # multi-platform images and export cache
+      # https://github.com/docker/setup-buildx-action
+      - name: Set Up Docker Buildx
+        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
+
+      - name: Build Docker Image
+        run: docker build . -t  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}
+
+      - name: Save Docker Image
+        run: docker save --output image.tar ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}
+        
+      - name: Upload Docker Image
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: image.tar
+          retention-days: 0
+          overwrite: true
+
+  snyk-analysis:
+    permissions:
+      contents: read # for actions/checkout to fetch code
+      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    steps: 
+
+    - name: Download Docker Image
+      uses: actions/download-artifact@v4
+      with:
+          name: docker-image
+          
+    - name: Load Docker Image
+      run: docker load --input image.tar    
+    
+    - name: Run Snyk to Check Docker Image For Vulnerabilities
+      # Snyk can be used to break the build when it detects vulnerabilities.
+      # In this case we want to upload the issues to GitHub Code Scanning
+      continue-on-error: false
+      uses: snyk/actions/docker@14818c4695ecc4045f33c9cee9e795a788711ca4
+      env:
+        # In order to use the Snyk Action you will need to have a Snyk API token.
+        # More details in https://github.com/snyk/actions#getting-your-snyk-token
+        # or you can signup for free at https://snyk.io/login
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}
+        args: --severity-threshold=critical
+  
+  docker-publish:
+    runs-on: ubuntu-latest
+    # Build needs to finish first
+    needs: [snyk-analysis]
+    # Only push images from the main branch
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+    steps:   
+                         
+      - name: Download Docker Image
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          
+      - name: Load Docker Image
+        run: docker load --input image.tar 
+        
+      # Login against a Docker registry except on PR
+      # https://github.com/docker/login-action
+      - name: Log Into DockerHub Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Release Tags
+        if: github.event.action == 'published'
+        run: |
+          echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}
+          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.SHA_TAG }}
+          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.RELEASE_VERSION }}
+          
+
+      - name: Push Images
+        run: docker push -a ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Docker System Prune
+        run: docker system prune --force
+        
+      - name: Logout From DockerHub Registry  
+        run: docker logout
+
