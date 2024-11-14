@@ -23,6 +23,7 @@ env:
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
   BRANCH_TAG: ${{ github.head_ref || github.ref_name }}
   LATEST_TAG: latest
+  SHA_TAG: ${{ github.sha }}
 
 jobs:
   snyk-maven-analysis:
@@ -157,7 +158,9 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Add Latest Tag
-        run: docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}
+        run: | 
+          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}
+          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.SHA_TAG }}
 
       - name: Push Images
         run: docker push -a ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
