@@ -134,7 +134,7 @@ jobs:
     # Build needs to finish first
     needs: [snyk-analysis]
     # Only push images from the main branch
-    if: github.ref == 'refs/heads/main'
+    #if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
       packages: write
