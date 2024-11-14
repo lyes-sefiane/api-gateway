@@ -19,12 +19,9 @@ on:
       - published
 
 env:
-  # Use docker.io for Docker Hub if empty
   REGISTRY: docker.io
-  # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
-  BRANCH_TAG: ${{ github.head_ref || github.ref_name }} 
-  SHA_TAG: sha-${{ github.sha }}
+  BRANCH_TAG: ${{ github.head_ref || github.ref_name }}
   LATEST_TAG: latest
 
 jobs:
@@ -58,8 +55,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-      # This is used to complete the identity challenge
-      # with sigstore/fulcio when running outside of PRs.
       id-token: write
 
     steps:
@@ -78,9 +73,6 @@ jobs:
       - name: Display Structure Of Downloaded Files
         run: ls -R target
 
-      # Set up BuildKit Docker container builder to be able to build
-      # multi-platform images and export cache
-      # https://github.com/docker/setup-buildx-action
       - name: Set Up Docker Buildx
         uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
 
@@ -100,9 +92,9 @@ jobs:
 
   snyk-analysis:
     permissions:
-      contents: read # for actions/checkout to fetch code
-      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
-      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+      contents: read
+      security-events: write
+      actions: read 
     runs-on: ubuntu-latest
     needs: [docker-build]
     steps: 
@@ -116,14 +108,9 @@ jobs:
       run: docker load --input image.tar    
     
     - name: Run Snyk to Check Docker Image For Vulnerabilities
-      # Snyk can be used to break the build when it detects vulnerabilities.
-      # In this case we want to upload the issues to GitHub Code Scanning
       continue-on-error: false
       uses: snyk/actions/docker@14818c4695ecc4045f33c9cee9e795a788711ca4
       env:
-        # In order to use the Snyk Action you will need to have a Snyk API token.
-        # More details in https://github.com/snyk/actions#getting-your-snyk-token
-        # or you can signup for free at https://snyk.io/login
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}
@@ -131,15 +118,10 @@ jobs:
   
   docker-publish:
     runs-on: ubuntu-latest
-    # Build needs to finish first
     needs: [snyk-analysis]
-    # Only push images from the main branch
-    #if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
       packages: write
-      # This is used to complete the identity challenge
-      # with sigstore/fulcio when running outside of PRs.
       id-token: write
     steps:   
                          
@@ -151,26 +133,16 @@ jobs:
       - name: Load Docker Image
         run: docker load --input image.tar 
         
-      # Login against a Docker registry except on PR
-      # https://github.com/docker/login-action
       - name: Log Into DockerHub Registry
-        #if: github.event_name != 'pull_request'
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       
-      - name: Release Tags
-        #if: github.event.action == 'published'
-        run: |
-          echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-          echo "DATE_NOW=$(date +'%Y-%m-%d_%H-%M-%S_')" >> $GITHUB_ENV
-          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}
-          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.SHA_TAG }}
-          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DATE_NOW }}${{ env.RELEASE_VERSION }}
-          
-
+      - name: Add Latest Tag
+        run: docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}
+      
       - name: Push Images
         run: docker push -a ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
