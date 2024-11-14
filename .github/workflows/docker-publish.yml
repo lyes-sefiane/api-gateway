@@ -134,7 +134,7 @@ jobs:
 
   docker-publish:
     runs-on: ubuntu-latest
-    needs: [snyk-analysis]
+    needs: [snyk-docker-analysis]
     permissions:
       contents: read
       packages: write
