@@ -28,7 +28,7 @@ env:
   BRANCH_TAG: ${{ github.head_ref || github.ref_name }} 
   SHA_TAG: sha-${{ github.sha }}
   LATEST_TAG: latest
-  DATE_NOW: $(date +'@_%Y-%m-%d_%H-%M-%S')
+  DATE_NOW: $(date +'@%Y-%m-%d_%H-%M-%S')
 
 jobs:
   maven-build:
