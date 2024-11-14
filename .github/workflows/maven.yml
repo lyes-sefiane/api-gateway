@@ -13,6 +13,22 @@ on:
     branches: [ "main" , "develop"]
 
 jobs:
+  snyk-analysis:
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    runs-on: ubuntu-latest
+    needs: [ maven-build ]
+    steps:
+      - uses: actions/checkout@master
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/maven-3-jdk-17@master
+        continue-on-error: false
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
   maven-build:
     runs-on: ubuntu-latest
     steps:
@@ -36,19 +52,3 @@ jobs:
           path: target/api-gateway.jar
           compression-level: 0
           overwrite: true
-  snyk-analysis:
-    permissions:
-      contents: read
-      security-events: write
-      actions: read
-    runs-on: ubuntu-latest
-    needs: [ maven-build ]
-    steps:
-      - uses: actions/checkout@master
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/maven-3-jdk-17@master
-        continue-on-error: true # To make sure that SARIF upload gets called
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --severity-threshold=high
