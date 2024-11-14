@@ -15,6 +15,10 @@ on:
 jobs:
 
   snyk-analysis:
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -27,6 +31,7 @@ jobs:
 
   maven-build:
     runs-on: ubuntu-latest
+    needs: [ snyk-analysis ]
     steps:
       - name: Checkout on API-Gateway Repository
         uses: actions/checkout@v4
