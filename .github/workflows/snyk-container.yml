@@ -136,7 +136,7 @@ jobs:
     # Build needs to finish first
     needs: [snyk-analysis]
     # Only push images from the main branch
-    #if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
       packages: write
@@ -164,7 +164,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       
       - name: Release Tags
-        #if: github.event.action == 'published'
+        if: github.event.action == 'published'
         run: |
           echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
           docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}
