@@ -27,7 +27,8 @@ env:
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
   BRANCH_TAG: ${{ github.head_ref || github.ref_name }} 
   #RELEASE_TAG: ${{ steps.tag.outputs.tag }}
-  SHA_TAG: ${{ github.sha }}
+  SHA_TAG: sha-${{ github.sha }}
+  LATEST_TAG: latest
 
 jobs:
   maven-build:
@@ -166,8 +167,20 @@ jobs:
       - name: Release Tags
         #if: github.event.action == 'published'
         run: |
-          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}
           docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.SHA_TAG }}
+     
+      - name: Get latest tag pushed
+        #if: github.event.action == 'published'
+        id: tag
+        uses: 32teeth/action-github-tag@v1
+        with:
+        # Return only the tag number (e.g., v1.0.0 -> 1.0.0)
+          numbers_only: true
+          
+      - name: Use the latest tag pushed
+        #if: github.event.action == 'published'
+        run: docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{steps.tag.outputs.tag}}
           
       - name: Push Images
         run: docker push -a ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
