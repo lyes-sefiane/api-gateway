@@ -10,7 +10,7 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ "main" , "develop"]
+    branches: [ "features" , "feature/*", "bugfix/*", "hotfix/*" ]
 
 jobs:
   snyk-analysis:
