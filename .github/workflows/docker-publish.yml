@@ -14,6 +14,8 @@
 name: Docker Build & Publish
 
 on:
+  push:
+    branches: ["main", "develop"]
   release:
     types:
       - published
@@ -23,7 +25,7 @@ env:
   IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
   BRANCH_TAG: ${{ github.head_ref || github.ref_name }}
   LATEST_TAG: latest
-  SHA_TAG: ${{ github.sha }}
+  SHA_TAG: sha-${{ github.sha }}
 
 jobs:
   snyk-maven-analysis:
@@ -141,7 +143,6 @@ jobs:
       packages: write
       id-token: write
     steps:
-
       - name: Download Docker Image
         uses: actions/download-artifact@v4
         with:
@@ -157,7 +158,8 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Add Latest Tag
+      - name: Add Latest Tag For Published Release Only
+        if: github.event.action == 'published'
         run: | 
           docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.LATEST_TAG }}
           docker image tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.SHA_TAG }}
