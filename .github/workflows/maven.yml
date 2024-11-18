@@ -13,12 +13,25 @@ on:
     branches: [ "features" , "feature/*", "bugfix/*", "hotfix/*" ]
 
 jobs:
-  snyk-analysis:
+  sonar-cloud-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Analyze with SonarCloud
+        uses: SonarSource/sonarcloud-github-action@4006f663ecaf1f8093e8e4abb9227f6041f52216
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_CLOUD_TOKEN }}
+        with:
+          args:
+            -Dsonar.projectKey=${{ secrets.SONAR_CLOUD_PROJECT_KEY }}
+            -Dsonar.organization=${{ secrets.SONAR_CLOUD_ORGANIZATION }}
+          projectBaseDir: .
+  snyk-maven-analysis:
     permissions:
       contents: read
       security-events: write
       actions: read
     runs-on: ubuntu-latest
+    needs: [sonar-cloud-analysis]
     steps:
       - uses: actions/checkout@master
       - name: Run Snyk to check for vulnerabilities
@@ -30,7 +43,7 @@ jobs:
           args: --severity-threshold=high
   maven-build:
     runs-on: ubuntu-latest
-    needs: [ snyk-analysis ]
+    needs: [snyk-maven-analysis]
     steps:
       - name: Checkout on API-Gateway Repository
         uses: actions/checkout@v4
