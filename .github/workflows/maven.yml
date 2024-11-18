@@ -31,7 +31,7 @@ jobs:
       security-events: write
       actions: read
     runs-on: ubuntu-latest
-    needs: [ sonar-cloud-analysis ]
+    needs: [sonar-cloud-analysis]
     steps:
       - uses: actions/checkout@master
       - name: Run Snyk to check for vulnerabilities
@@ -43,7 +43,7 @@ jobs:
           args: --severity-threshold=high
   maven-build:
     runs-on: ubuntu-latest
-    needs: [ snyk-analysis ]
+    needs: [snyk-analysis]
     steps:
       - name: Checkout on API-Gateway Repository
         uses: actions/checkout@v4
