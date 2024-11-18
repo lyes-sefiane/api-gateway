@@ -24,8 +24,9 @@ jobs:
           args:
             -Dsonar.projectKey=${{ secrets.SONAR_CLOUD_PROJECT_KEY }}
             -Dsonar.organization=${{ secrets.SONAR_CLOUD_ORGANIZATION }}
+            -Dsonar.scm.provider=git
           projectBaseDir: .
-  snyk-analysis:
+  snyk-maven-analysis:
     permissions:
       contents: read
       security-events: write
@@ -43,7 +44,7 @@ jobs:
           args: --severity-threshold=high
   maven-build:
     runs-on: ubuntu-latest
-    needs: [snyk-analysis]
+    needs: [snyk-maven-analysis]
     steps:
       - name: Checkout on API-Gateway Repository
         uses: actions/checkout@v4
