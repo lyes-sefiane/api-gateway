@@ -40,6 +40,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
+          command: monitor
           args: --severity-threshold=high
   maven-build:
     runs-on: ubuntu-latest
