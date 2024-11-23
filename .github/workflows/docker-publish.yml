@@ -106,7 +106,7 @@ jobs:
         run: ls -R target
 
       - name: Set Up Docker Buildx
-        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
+        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226
 
       - name: Build Docker Image
         run: docker build . -t  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}
@@ -122,35 +122,9 @@ jobs:
           retention-days: 0
           overwrite: true
 
-  snyk-docker-analysis:
-    permissions:
-      contents: read
-      security-events: write
-      actions: read
-    runs-on: ubuntu-latest
-    needs: [docker-build]
-    steps:
-
-      - name: Download Docker Image
-        uses: actions/download-artifact@v4
-        with:
-          name: docker-image
-
-      - name: Load Docker Image
-        run: docker load --input image.tar
-
-      - name: Run Snyk to Check Docker Image For Vulnerabilities
-        continue-on-error: false
-        uses: snyk/actions/docker@14818c4695ecc4045f33c9cee9e795a788711ca4
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}
-          args: --severity-threshold=critical
-
   docker-publish:
     runs-on: ubuntu-latest
-    needs: [snyk-docker-analysis]
+    needs: [docker-build]
     permissions:
       contents: read
       packages: write
@@ -165,11 +139,22 @@ jobs:
         run: docker load --input image.tar
 
       - name: Log Into DockerHub Registry
-        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Docker Scout CVES
+        id: docker-scout
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{env.BRANCH_TAG}}
+          ignore-unchanged: true
+          only-severities: critical,high,medium,low
+          write-comment: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Add Latest Tag For Published Release Only
         if: github.event.action == 'published'
