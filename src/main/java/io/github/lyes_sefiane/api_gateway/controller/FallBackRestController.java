@@ -1,4 +1,4 @@
-package com.lyes.sefiane.api_gateway.controller;
+package io.github.lyes_sefiane.api_gateway.controller;
 
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;

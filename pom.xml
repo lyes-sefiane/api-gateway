@@ -6,25 +6,38 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.3.5</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
-	<groupId>com.lyes.sefiane</groupId>
+	<groupId>io.github.lyes-sefiane</groupId>
 	<artifactId>api-gateway</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>api-gateway</name>
 	<description>API Gateway</description>
-	<url/>
+	<url>https://lyes-sefiane.web.app/</url>
+
 	<licenses>
-		<license/>
+		<license>
+			<name>CC BY-NC-ND 4.0</name>
+			<url>https://creativecommons.org/licenses/by-nc-nd/4.0/</url>
+			<comments>Attribution-NonCommercial-NoDerivatives 4.0 International</comments>
+		</license>
 	</licenses>
+
 	<developers>
-		<developer/>
+		<developer>
+			<name>Lyes Sefiane</name>
+			<email>lyes.sefiane@gmail.com</email>
+			<url>https://github.com/lyes-sefiane</url>
+			<roles>
+				<role>Software Engineer 3 𓂀</role>
+			</roles>
+		</developer>
 	</developers>
+
 	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
+		<connection>scm:git:https://github.com/lyes-sefiane/api-gateway.git</connection>
+		<developerConnection>scm:git:https://github.com/lyes-sefiane/api-gateway.git</developerConnection>
+		<url>https://github.com/lyes-sefiane/api-gateway</url>
 	</scm>
 
 	<properties>
@@ -37,7 +50,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
-		<!-- https://security.snyk.io/vuln/SNYK-JAVA-IONETTY-8367012 -->
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-common</artifactId>
