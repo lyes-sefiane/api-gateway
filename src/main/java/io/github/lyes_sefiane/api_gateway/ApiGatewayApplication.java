@@ -1,4 +1,4 @@
-package com.lyes.sefiane.api_gateway;
+package io.github.lyes_sefiane.api_gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
