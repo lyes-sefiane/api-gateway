@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.5</version>
+		<version>3.4.0</version>
 		<relativePath/>
 	</parent>
 	<groupId>io.github.lyes-sefiane</groupId>
 	<artifactId>api-gateway</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>2.1.0</version>
 	<name>api-gateway</name>
 	<description>API Gateway</description>
 	<url>https://lyes-sefiane.web.app/</url>
