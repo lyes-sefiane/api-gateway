@@ -139,17 +139,21 @@
 ## Snyk Maven Analysis
 
 ```bash
- Testing /github/workspace...
 
-Organization:      lyes-sefiane
-Package manager:   maven
-Target file:       pom.xml
-Project name:      com.lyes.sefiane:api-gateway
-Open source:       no
-Project path:      /github/workspace
-Licenses:          enabled
+Run snyk/actions/maven-3-jdk-17@master
+  with:
+    command: monitor
+    args: --severity-threshold=low
+    json: false
+  env:
+    SNYK_TOKEN: ***
+/usr/bin/docker run --name snyksnykmaven3jdk17_8bea9f --label 2de416 --workdir /github/workspace --rm -e "SNYK_TOKEN" -e "INPUT_COMMAND" -e "INPUT_ARGS" -e "INPUT_JSON" -e "FORCE_COLOR" -e "SNYK_INTEGRATION_NAME" -e "SNYK_INTEGRATION_VERSION" -e "HOME" -e "GITHUB_JOB" -e "GITHUB_REF" -e "GITHUB_SHA" -e "GITHUB_REPOSITORY" -e "GITHUB_REPOSITORY_OWNER" -e "GITHUB_REPOSITORY_OWNER_ID" -e "GITHUB_RUN_ID" -e "GITHUB_RUN_NUMBER" -e "GITHUB_RETENTION_DAYS" -e "GITHUB_RUN_ATTEMPT" -e "GITHUB_REPOSITORY_ID" -e "GITHUB_ACTOR_ID" -e "GITHUB_ACTOR" -e "GITHUB_TRIGGERING_ACTOR" -e "GITHUB_WORKFLOW" -e "GITHUB_HEAD_REF" -e "GITHUB_BASE_REF" -e "GITHUB_EVENT_NAME" -e "GITHUB_SERVER_URL" -e "GITHUB_API_URL" -e "GITHUB_GRAPHQL_URL" -e "GITHUB_REF_NAME" -e "GITHUB_REF_PROTECTED" -e "GITHUB_REF_TYPE" -e "GITHUB_WORKFLOW_REF" -e "GITHUB_WORKFLOW_SHA" -e "GITHUB_WORKSPACE" -e "GITHUB_ACTION" -e "GITHUB_EVENT_PATH" -e "GITHUB_ACTION_REPOSITORY" -e "GITHUB_ACTION_REF" -e "GITHUB_PATH" -e "GITHUB_ENV" -e "GITHUB_STEP_SUMMARY" -e "GITHUB_STATE" -e "GITHUB_OUTPUT" -e "RUNNER_OS" -e "RUNNER_ARCH" -e "RUNNER_NAME" -e "RUNNER_ENVIRONMENT" -e "RUNNER_TOOL_CACHE" -e "RUNNER_TEMP" -e "RUNNER_WORKSPACE" -e "ACTIONS_RUNTIME_URL" -e "ACTIONS_RUNTIME_TOKEN" -e "ACTIONS_CACHE_URL" -e "ACTIONS_RESULTS_URL" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "/home/runner/work/api-gateway/api-gateway":"/github/workspace" snyk/snyk:maven-3-jdk-17  "snyk" "monitor" "--severity-threshold=low"
 
-✔ Tested 127 dependencies for known issues, no vulnerable paths found.
+Monitoring /github/workspace (io.github.lyes-sefiane:api-gateway)...
+
+Explore this snapshot at https://app.snyk.io/org/lyes-sefiane/project/8bb8216c-fa31-4e01-be2d-990dc42d1e2a/history/7ecdd7e5-51dd-4481-b97e-f0a73d476b67
+
+Notifications about newly disclosed issues related to these dependencies will be emailed to you.
 ```
 
 <img title="Snyk" alt="Snyk" src="https://raw.githubusercontent.com/wiki/lyes-sefiane/api-gateway/images/lyes-sefiane-snyk-analysis.PNG">
